@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+    nginx:
+        image: nginx:1.25-alpine
+        container_name: universal-gateway-nginx
+        restart: unless-stopped
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            # Папка с конфигурациями. Пользователь будет добавлять сюда файлы.
+            - ./nginx/conf.d:/etc/nginx/conf.d
+            # Папки для Certbot
+            - certbot_certs:/etc/letsencrypt
+            - certbot_www:/var/www/certbot
+        networks:
+            - web-gateway # Подключаемся к внешней сети
+
+    certbot:
+        image: certbot/certbot
+        container_name: universal-gateway-certbot
+        volumes:
+            - certbot_certs:/etc/letsencrypt
+            - certbot_www:/var/www/certbot
+        # Эта команда просто запускает бесконечный цикл проверки сертификатов раз в 12 часов
+        command: >
+            sh -c "
+              trap exit TERM;
+              while :; do
+                certbot renew --quiet;
+                sleep 12h & wait $${!};
+              done;
+            "
+        networks:
+            - web-gateway
+
+networks:
+    web-gateway:
+        external: true # Указываем, что сеть создается отдельно, а не этим файлом
+
+volumes:
+    certbot_certs:
+    certbot_www:

@@ -1,0 +1,4 @@
+.DS_Store
+nginx/conf.d/*.conf
+nginx/ssl/
+/certbot
