@@ -1,16 +1,13 @@
-# Это ШАБЛОН. Скопируйте его в nginx/conf.d/your-domain.com.conf
-# и замените значения в < >.
+# Шаблон для проксирования на другой Docker-контейнер
 
 server {
     listen 80;
-    server_name <DOMAIN>; # Например: my-app.example.com
+    server_name <DOMAIN>;
 
-    # Обработка запросов на проверку домена от Let's Encrypt
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
     }
 
-    # Редирект всего остального на HTTPS
     location / {
         return 301 https://$host$request_uri;
     }
@@ -18,20 +15,24 @@ server {
 
 server {
     listen 443 ssl http2;
-    server_name <DOMAIN>; # Например: my-app.example.com
+    server_name <DOMAIN>;
 
-    # Пути к сертификатам. НЕ МЕНЯЙТЕ ИХ.
     ssl_certificate /etc/letsencrypt/live/<DOMAIN>/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/<DOMAIN>/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
+    # Добавляем HSTS заголовок для безопасности
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
     location / {
-        # Имя сервиса из ЕГО docker-compose.yml и его внутренний порт
         proxy_pass http://<SERVICE_NAME>:<SERVICE_PORT>;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
     }
 }
