@@ -1,11 +1,9 @@
-# Шаблон для локального сервиса. Скопируйте в nginx/conf.d/
-# и замените <PLACEHOLDERS>.
+# Шаблон для локального сервиса
 
 server {
     listen 80;
-    server_name <DOMAIN>; # например: localhost или my-app.local
+    server_name <DOMAIN>;
 
-    # Редирект на HTTPS
     location / {
         return 301 https://$host$request_uri;
     }
@@ -13,20 +11,20 @@ server {
 
 server {
     listen 443 ssl http2;
-    server_name <DOMAIN>; # например: localhost или my-app.local
+    server_name <DOMAIN>;
 
-    # Пути к локально сгенерированным сертификатам
     ssl_certificate /etc/nginx/ssl/<DOMAIN>.crt;
     ssl_certificate_key /etc/nginx/ssl/<DOMAIN>.key;
-
     ssl_protocols TLSv1.2 TLSv1.3;
 
     location / {
-        # Имя сервиса из ЕГО docker-compose.yml и его внутренний порт
         proxy_pass http://<SERVICE_NAME>:<SERVICE_PORT>;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
     }
 }

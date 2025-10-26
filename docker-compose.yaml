@@ -1,44 +1,47 @@
-version: "3.8"
+version: '3.8'
 
 services:
-    nginx:
-        image: nginx:1.25-alpine
-        container_name: universal-gateway-nginx
-        restart: unless-stopped
-        ports:
-            - "80:80"
-            - "443:443"
-        volumes:
-            # Папка с конфигурациями. Пользователь будет добавлять сюда файлы.
-            - ./nginx/conf.d:/etc/nginx/conf.d
-            # Папки для Certbot
-            - certbot_certs:/etc/letsencrypt
-            - certbot_www:/var/www/certbot
-        networks:
-            - web-gateway # Подключаемся к внешней сети
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: ${COMPOSE_PROJECT_NAME}-nginx
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - certbot_certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    networks:
+      - gateway-net
+    depends_on:
+      - certbot
 
-    certbot:
-        image: certbot/certbot
-        container_name: universal-gateway-certbot
-        volumes:
-            - certbot_certs:/etc/letsencrypt
-            - certbot_www:/var/www/certbot
-        # Эта команда просто запускает бесконечный цикл проверки сертификатов раз в 12 часов
-        command: >
-            sh -c "
-              trap exit TERM;
-              while :; do
-                certbot renew --quiet;
-                sleep 12h & wait $${!};
-              done;
-            "
-        networks:
-            - web-gateway
+  certbot:
+    image: certbot/certbot
+    container_name: ${COMPOSE_PROJECT_NAME}-certbot
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    # Команда запускает проверку на продление каждые 12 часов.
+    # trap exit TERM; - корректно завершает работу при docker-compose down
+    # wait $${!}; - ждет завершения sleep, не загружая CPU
+    command: >
+      sh -c "
+        trap exit TERM;
+        while :; do
+          certbot renew --quiet;
+          sleep 12h & wait $${!};
+        done;
+      "
+    networks:
+      - gateway-net
 
 networks:
-    web-gateway:
-        external: true # Указываем, что сеть создается отдельно, а не этим файлом
+  gateway-net:
+    name: ${WEB_GATEWAY_NETWORK}
+    external: true
 
 volumes:
-    certbot_certs:
-    certbot_www:
+  certbot_certs:
+  certbot_www:

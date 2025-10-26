@@ -1,21 +1,20 @@
-version: "3.8"
+version: '3.8'
 
 services:
-    nginx:
-        image: nginx:1.25-alpine
-        container_name: local-gateway-nginx
-        restart: unless-stopped
-        ports:
-            - "80:80"
-            - "443:443"
-        volumes:
-            # Папка с конфигурациями сайтов (общая для обоих режимов)
-            - ./nginx/conf.d:/etc/nginx/conf.d
-            # Папка с нашими локальными SSL сертификатами
-            - ./nginx/ssl:/etc/nginx/ssl
-        networks:
-            - web-gateway
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: ${COMPOSE_PROJECT_NAME}-local-nginx
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - gateway-net
 
 networks:
-    web-gateway:
-        external: true
+  gateway-net:
+    name: ${WEB_GATEWAY_NETWORK}
+    external: true
