@@ -29,7 +29,7 @@ SERVICE_PORT=""
 case $PROXY_TYPE in
   1) # Docker
     TEMPLATE_FILE="nginx/templates/production.conf.template"
-    read -p "Введите имя сервиса Docker (из его docker-compose.yml): " SERVICE_NAME
+    read -p "Введите имя сервиса Docker (из его docker-compose.yaml): " SERVICE_NAME
     if [ -z "$SERVICE_NAME" ]; then echo "Ошибка: Имя сервиса не может быть пустым."; exit 1; fi
     read -p "Введите внутренний порт сервиса (например, 8000): " SERVICE_PORT
     if [ -z "$SERVICE_PORT" ]; then echo "Ошибка: Порт не может быть пустым."; exit 1; fi

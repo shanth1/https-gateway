@@ -54,11 +54,11 @@ case $COMMAND in
     ;;
   up-local)
     echo "--- Запускаем локальный шлюз... ---"
-    docker-compose -f docker-compose.local.yml up -d
+    docker-compose -f docker-compose.local.yaml up -d
     ;;
   down-local)
     echo "--- Останавливаем локальный шлюз... ---"
-    docker-compose -f docker-compose.local.yml down
+    docker-compose -f docker-compose.local.yaml down
     ;;
   reload)
     echo "--- Перезагружаем конфигурацию Nginx... ---"
