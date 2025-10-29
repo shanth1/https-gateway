@@ -53,10 +53,11 @@ case $PROXY_TYPE in
     ;;
 esac
 
-echo "### Создаем конфигурацию Nginx для домена $DOMAIN... ###"
+echo "### Шаг 1: Подготовка конфигурации Nginx... ###"
+# Создаем полную конфигурацию, но пока не применяем ее
 cp $TEMPLATE_FILE $CONFIG_FILE
 
-# Используем sed для замены плейсхолдеров
+# Заменяем плейсхолдеры
 sed -i.bak "s/<DOMAIN>/$DOMAIN/g" $CONFIG_FILE
 if [ ! -z "$SERVICE_NAME" ]; then
     sed -i.bak "s/<SERVICE_NAME>/$SERVICE_NAME/g" $CONFIG_FILE
@@ -65,12 +66,19 @@ if [ ! -z "$TARGET_ADDRESS" ]; then
     sed -i.bak "s/<TARGET_ADDRESS>/$TARGET_ADDRESS/g" $CONFIG_FILE
 fi
 sed -i.bak "s/<SERVICE_PORT>/$SERVICE_PORT/g" $CONFIG_FILE
-rm $CONFIG_FILE.bak # Удаляем бэкап-файл
+rm ${CONFIG_FILE}.bak
 
-echo "### Перезагружаем Nginx, чтобы применить конфигурацию... ###"
+# Сохраняем полную конфигурацию в отдельный файл
+cp $CONFIG_FILE "${CONFIG_FILE}.with_ssl"
+
+# А в основной конфигурации временно удаляем HTTPS-блок
+sed -i.bak '/listen 443 ssl/,$d' $CONFIG_FILE
+rm ${CONFIG_FILE}.bak
+
+echo "### Шаг 2: Перезагрузка Nginx с временной HTTP-конфигурацией... ###"
 docker-compose exec nginx nginx -s reload
 
-echo "### Запрашиваем сертификат для $DOMAIN... ###"
+echo "### Шаг 3: Запрос сертификата Let's Encrypt для $DOMAIN... ###"
 STAGING_ARG=""
 read -p "Использовать staging-сервер Let's Encrypt (для тестов)? (y/n) " -n 1 -r
 echo
@@ -87,13 +95,17 @@ docker-compose run --rm certbot certonly --webroot -w /var/www/certbot \
   --non-interactive
 
 if [ $? -ne 0 ]; then
-  echo "### Ошибка получения сертификата. Удаляем созданный конфиг. ###"
+  echo "### ОШИБКА: Не удалось получить сертификат. Удаляем временные файлы. ###"
   rm $CONFIG_FILE
+  rm "${CONFIG_FILE}.with_ssl"
   docker-compose exec nginx nginx -s reload
   exit 1
 fi
 
-echo "### Сертификат успешно получен! Перезагружаем Nginx для активации SSL... ###"
+echo "### Шаг 4: Восстановление полной HTTPS-конфигурации... ###"
+mv "${CONFIG_FILE}.with_ssl" $CONFIG_FILE
+
+echo "### Шаг 5: Финальная перезагрузка Nginx для активации SSL... ###"
 docker-compose exec nginx nginx -s reload
 
 echo ""
