@@ -16,6 +16,8 @@ services:
       - gateway-net
     depends_on:
       - certbot
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
 
   certbot:
     image: certbot/certbot
