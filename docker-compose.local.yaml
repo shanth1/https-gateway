@@ -13,6 +13,8 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl:ro
     networks:
       - gateway-net
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
 
 networks:
   gateway-net:
