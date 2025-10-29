@@ -36,7 +36,7 @@ case $PROXY_TYPE in
     ;;
   2) # Host
     TEMPLATE_FILE="nginx/templates/ip.conf.template"
-    TARGET_ADDRESS="host.docker.internal" # Магическое имя для прокси на хост
+    TARGET_ADDRESS="host.docker.internal"
     read -p "Введите порт на хост-машине (например, 8080): " SERVICE_PORT
     if [ -z "$SERVICE_PORT" ]; then echo "Ошибка: Порт не может быть пустым."; exit 1; fi
     ;;
@@ -54,10 +54,8 @@ case $PROXY_TYPE in
 esac
 
 echo "### Шаг 1: Подготовка конфигурации Nginx... ###"
-# Создаем полную конфигурацию, но пока не применяем ее
 cp $TEMPLATE_FILE $CONFIG_FILE
 
-# Заменяем плейсхолдеры
 sed -i.bak "s/<DOMAIN>/$DOMAIN/g" $CONFIG_FILE
 if [ ! -z "$SERVICE_NAME" ]; then
     sed -i.bak "s/<SERVICE_NAME>/$SERVICE_NAME/g" $CONFIG_FILE
@@ -71,9 +69,8 @@ rm ${CONFIG_FILE}.bak
 # Сохраняем полную конфигурацию в отдельный файл
 cp $CONFIG_FILE "${CONFIG_FILE}.with_ssl"
 
-# А в основной конфигурации временно удаляем HTTPS-блок
-sed -i.bak '/listen 443 ssl/,$d' $CONFIG_FILE
-rm ${CONFIG_FILE}.bak
+# Временно удаляем HTTPS-блок, оставляя только HTTP-блок
+awk '/server {/ && seen {exit} /server {/ {seen=1} {print}' $CONFIG_FILE > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" $CONFIG_FILE
 
 echo "### Шаг 2: Перезагрузка Nginx с временной HTTP-конфигурацией... ###"
 docker-compose exec nginx nginx -s reload
