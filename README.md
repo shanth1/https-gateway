@@ -19,14 +19,14 @@ This project provides a ready-to-use, universal reverse-proxy gateway. It is des
 
 ## 📖 Table of Contents
 
-1.  [Core Concepts](#core-concepts)
-2.  [Quick Start](#quick-start)
-3.  [Primary Use Case](#primary-use-case)
-4.  [Advanced Use Case](#advanced-use-case)
-5.  [Local Development Mode](#local-development-mode)
-6.  [Management and Monitoring](#management-and-monitoring)
-7.  [Command Reference](#command-reference)
-8.  [Frequently Asked Questions (FAQ)](#frequently-asked-questions-faq)
+1.  [Core Concepts](#-core-concepts)
+2.  [Quick Start](#-quick-start)
+3.  [Primary Use Case](#-primary-use-case)
+4.  [Advanced Use Case](#-advanced-use-case)
+5.  [Local Development Mode](#-local-development-mode)
+6.  [Management and Monitoring](#-management-and-monitoring)
+7.  [Command Reference](#-command-reference)
+8.  [Frequently Asked Questions (FAQ)](#-frequently-asked-questions-faq)
 
 ---
 
