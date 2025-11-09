@@ -42,7 +42,7 @@ To use the gateway effectively, it's important to understand three key elements:
 
 ---
 
-## ⚙️ Quick Start: Initial Setup
+## ⚙️ Quick Start
 
 These steps need to be performed **once** on your server.
 
