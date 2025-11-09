@@ -1,386 +1,370 @@
-# 🚀 Универсальный HTTPS шлюз на Docker и Nginx
+# 🚀 Universal HTTPS Gateway with Docker and Nginx
 
-Этот проект предоставляет готовый к использованию, универсальный reverse-proxy шлюз. Он спроектирован для максимальной простоты и надежности, позволяя вам без труда публиковать любое количество веб-приложений под HTTPS, будь то Docker-контейнеры или обычные бинарники.
+[Russian version](README.ru.md)
 
-## 🌟 Ключевые возможности
+This project provides a ready-to-use, universal reverse-proxy gateway. It is designed for maximum simplicity and reliability, allowing you to effortlessly publish any number of web applications under HTTPS, whether they are Docker containers or regular binaries.
 
-- **Полная автоматизация SSL**: Автоматическое получение и продление SSL-сертификатов от Let's Encrypt для любых доменов и субдоменов.
-- **Поддержка субдоменов**: Легко настраивайте `app.example.com`, `api.example.com` и даже `staging.api.example.com`.
-- **Гибкое проксирование**:
-  - Проксирование на другие **Docker-контейнеры** в той же сети.
-  - Проксирование на сервисы, запущенные **на хост-машине** (по порту).
-- **Режим локальной разработки**: Работа с `localhost` и кастомными доменами (`.local`, `.test`) через самоподписанные сертификаты для оффлайн-разработки.
-- **Централизованное управление**: Единый скрипт `gateway.sh` для всех операций: от первоначальной настройки до мониторинга сертификатов.
-- **Безопасность по умолчанию**: Использует рекомендованные Certbot параметры TLS и автоматически добавляет важные заголовки безопасности (HSTS).
+## 🌟 Key Features
 
----
-
-## 📖 Содержание
-
-1.  [Основные концепции](#-основные-концепции)
-2.  [Быстрый старт: Первоначальная настройка](#-быстрый-старт-первоначальная-настройка)
-3.  [**Основной сценарий: Публикация проекта с Frontend и Backend**](#-основной-сценарий-публикация-проекта-с-frontend-и-backend)
-4.  [Продвинутый сценарий: Проксирование на сервис без Docker](#-продвинутый-сценарий-проксирование-на-сервис-без-docker)
-5.  [Режим локальной разработки](#-режим-локальной-разработки)
-6.  [Управление и мониторинг](#-управление-и-мониторинг)
-7.  [Справочник команд `gateway.sh`](#-справочник-команд-gatewaysh)
-8.  [Часто задаваемые вопросы (FAQ)](#-часто-задаваемые-вопросы-faq)
+- **Full SSL Automation**: Automatically obtains and renews SSL certificates from Let's Encrypt for any domains and subdomains.
+- **Subdomain Support**: Easily configure `app.example.com`, `api.example.com`, and even `staging.api.example.com`.
+- **Flexible Proxying**:
+  - Proxy to other **Docker containers** in the same network.
+  - Proxy to services running **on the host machine** (by port) or on **another server** in a private network.
+- **Local Development Mode**: Work with `localhost` and custom domains (`.local`, `.test`) using self-signed certificates for offline development.
+- **Centralized Management**: A single `gateway.sh` script for all operations: from initial setup to certificate monitoring.
+- **Security by Default**: Uses recommended Certbot TLS parameters and automatically adds important security headers (HSTS).
 
 ---
 
-## 🧠 Основные концепции
+## 📖 Table of Contents
 
-Чтобы эффективно использовать шлюз, важно понимать три ключевых элемента:
-
-1.  **Nginx + Certbot**: `Nginx` выступает в роли reverse-proxy, принимая весь трафик на портах 80 и 443 и распределяя его по вашим приложениям. `Certbot` работает в связке с Nginx для автоматического получения и продления SSL-сертификатов через ACME-протокол.
-
-2.  **Общая Docker-сеть**: Шлюз и все ваши контейнеризированные приложения должны находиться в одной общей Docker-сети (по умолчанию `web-gateway`). Это позволяет контейнерам "видеть" друг друга по именам сервисов, что является безопасным и стандартным подходом в Docker. Приложениям не нужно выставлять порты наружу (`ports`), им достаточно объявить их внутри сети (`expose`).
-
-3.  **Скрипт `gateway.sh`**: Это ваш единый центр управления. Вместо того чтобы запоминать длинные `docker-compose` команды, вы используете простые и понятные команды вроде `./gateway.sh add` или `./gateway.sh check-expiry`.
+1.  [Core Concepts](#-core-concepts)
+2.  [Quick Start](#-quick-start)
+3.  [Primary Use Case](#-primary-use-case)
+4.  [Advanced Use Case](#-advanced-use-case)
+5.  [Local Development Mode](#-local-development-mode)
+6.  [Management and Monitoring](#-management-and-monitoring)
+7.  [Command Reference](#-command-reference)
+8.  [Frequently Asked Questions (FAQ)](#-frequently-asked-questions-faq)
 
 ---
 
-## ⚙️ Быстрый старт: Первоначальная настройка
+## 🧠 Core Concepts
 
-Эти шаги нужно выполнить **один раз** на вашем сервере.
+To use the gateway effectively, it's important to understand three key elements:
 
-1.  **Клонируйте репозиторий:**
+1.  **Nginx + Certbot**: `Nginx` acts as a reverse-proxy, accepting all traffic on ports 80 and 443 and distributing it to your applications. `Certbot` works in tandem with Nginx to automatically obtain and renew SSL certificates via the ACME protocol.
+
+2.  **Shared Docker Network**: The gateway and all your containerized applications must be in the same shared Docker network (by default, `web-gateway`). This allows containers to "see" each other by their service names, which is a secure and standard approach in Docker. Applications don't need to expose ports to the outside world (`ports`); they just need to declare them within the network (`expose`).
+
+3.  **The `gateway.sh` script**: This is your single control center. Instead of memorizing long `docker-compose` commands, you use simple and clear commands like `./gateway.sh add` or `./gateway.sh check-expiry`.
+
+---
+
+## ⚙️ Quick Start
+
+These steps need to be performed **once** on your server.
+
+1.  **Clone the repository:**
 
     ```sh
     git clone <your-repo-url>
     cd <repo-folder>
     ```
 
-2.  **(Опционально) Настройте `.env`:**
-    Вы можете изменить имя Docker-сети в файле `.env`. Если вы это сделаете, не забудьте использовать то же имя в `docker-compose.yaml` файлах ваших приложений.
+2.  **(Optional) Configure `.env`:**
+    You can change the Docker network name in the `.env` file. If you do, remember to use the same name in the `docker-compose.yaml` files of your applications.
 
-3.  **Запустите скрипт настройки:**
-    Скрипт создаст Docker-сеть и скачает в Docker-том рекомендованные параметры TLS для Nginx.
+3.  **Run the setup script:**
+    The script will create the Docker network and download recommended TLS parameters for Nginx into a Docker volume.
 
     ```sh
-    chmod +x gateway.sh
+    chmod +x gateway.sh ./scripts/*.sh
     ./gateway.sh setup
     ```
 
-    Ожидаемый результат:
+    Expected output:
 
     ```
-    Создаем Docker-сеть 'web-gateway'...
-    Скачиваем рекомендованные параметры TLS...
-    Копируем параметры в Docker-том...
-    ✅ Первоначальная настройка завершена!
+    Creating Docker network 'web-gateway'...
+    Downloading recommended TLS parameters...
+    Copying parameters to Docker volume...
+    ✅ Initial setup complete!
     ```
 
-4.  **Запустите шлюз:**
-    Эта команда запустит контейнеры Nginx и Certbot в фоновом режиме.
+4.  **Start the gateway:**
+    This command will run the Nginx and Certbot containers in the background.
     ```sh
     ./gateway.sh up
     ```
-    Теперь ваш шлюз работает и готов к настройке доменов.
+    Your gateway is now running and ready for domain configuration.
 
 ---
 
-## 🚀 Основной сценарий: Публикация проекта с Frontend и Backend
+## 🚀 Primary Use Case
 
-Представим, что у нас есть стандартный веб-проект, состоящий из двух Docker-сервисов:
+> Deploying a Project with Frontend and Backend
 
-- `frontend` (например, React/Vue приложение)
-- `backend` (например, Node.js/Python API)
+Let's imagine we have a standard web project consisting of two Docker services:
 
-Мы хотим сделать их доступными по адресам:
+- `frontend` (e.g., a React/Vue application)
+- `backend` (e.g., a Node.js/Python API)
+
+We want to make them accessible at:
 
 - `app.example.com` -> `frontend`
 - `api.example.com` -> `backend`
 
-### Шаг 1: Подготовка приложений
+### Step 1: Prepare your applications
 
-Убедитесь, что `docker-compose.yaml` файлы ваших приложений настроены для работы с внешней сетью шлюза.
+Ensure that the `docker-compose.yaml` files for your applications are configured to use the gateway's external network.
 
-**Пример `docker-compose.yaml` для `frontend`:**
+**Example `docker-compose.yaml` for `frontend`:**
 
 ```yaml
 # my-frontend-app/docker-compose.yaml
 version: '3.8'
 
 services:
-  frontend-app: # <-- Имя сервиса: frontend-app
+  frontend-app: # <-- Service name: frontend-app
     image: my-frontend-image
     restart: unless-stopped
     expose:
-      - '80' # <-- Внутренний порт
+      - '80' # <-- Internal port
     networks:
       - web-gateway-net
 
 networks:
   web-gateway-net:
     external: true
-    name: web-gateway # Имя сети из .env шлюза
+    name: web-gateway # Network name from the gateway's .env file
 ```
 
-**Пример `docker-compose.yaml` для `backend`:**
+_The `backend-api` is configured similarly._
 
-```yaml
-# my-backend-api/docker-compose.yaml
-version: '3.8'
+### Step 2: Start the applications
 
-services:
-  backend-api: # <-- Имя сервиса: backend-api
-    image: my-backend-image
-    restart: unless-stopped
-    expose:
-      - '8000' # <-- Внутренний порт
-    networks:
-      - web-gateway-net
-
-networks:
-  web-gateway-net:
-    external: true
-    name: web-gateway # Имя сети из .env шлюза
-```
-
-### Шаг 2: Запуск приложений
-
-Запустите оба сервиса из их папок:
+Start both services from their respective folders:
 
 ```sh
-# В папке frontend
+# In the frontend folder
 docker-compose up -d
 
-# В папке backend
+# In the backend folder
 docker-compose up -d
 ```
 
-### Шаг 3: Настройка DNS
+### Step 3: Configure DNS
 
-В панели управления вашего домена создайте две A-записи, указывающие на IP-адрес вашего сервера:
+In your domain's control panel, create two A-records pointing to your server's IP address:
 
 - `app.example.com` -> `SERVER_IP`
 - `api.example.com` -> `SERVER_IP`
 
-> **💡 Важно:** Прежде чем продолжить, убедитесь, что DNS-записи обновились. Вы можете проверить это командой `ping app.example.com`.
+> **💡 Important:** Before proceeding, make sure the DNS records have propagated. You can check this with the command `ping app.example.com`.
 
-### Шаг 4: Добавление доменов в шлюз
+### Step 4: Add domains to the gateway
 
-Теперь самое интересное. Вернитесь в папку со шлюзом и добавьте каждый домен с помощью интерактивного скрипта.
+Return to the gateway folder and add each domain using the interactive script.
 
-**Добавляем Frontend:**
-
-```sh
-./gateway.sh add
-```
-
-Ответьте на вопросы скрипта:
-
-- `Введите домен`: `app.example.com`
-- `Введите ваш email`: `admin@example.com`
-- `Куда проксировать трафик? [1-2]`: `1` (на Docker-контейнер)
-- `Введите имя сервиса Docker`: `frontend-app` (из `docker-compose.yaml` фронтенда)
-- `Введите внутренний порт сервиса`: `80`
-- `Использовать staging-сервер? (y/n)`: `n` (для реального сертификата)
-
-Скрипт автоматически создаст конфиг, запросит сертификат и перезагрузит Nginx.
-
-**Добавляем Backend:**
-Снова запускаем тот же скрипт:
+**Adding the Frontend:**
 
 ```sh
 ./gateway.sh add
 ```
 
-И отвечаем на вопросы для бэкенда:
+Answer the script's questions:
 
-- `Введите домен`: `api.example.com`
-- `Введите ваш email`: `admin@example.com`
-- `Куда проксировать трафик? [1-2]`: `1`
-- `Введите имя сервиса Docker`: `backend-api` (из `docker-compose.yaml` бэкенда)
-- `Введите внутренний порт сервиса`: `8000`
-- `Использовать staging-сервер? (y/n)`: `n`
+- `Enter domain`: `app.example.com`
+- `Enter your email`: `admin@example.com`
+- `Where to proxy traffic? [1-3]`: `1` (To a Docker container)
+- `Enter Docker service name`: `frontend-app` (from the frontend's `docker-compose.yaml`)
+- `Enter the service's internal port`: `80`
+- `Use staging server? (y/n)`: `n` (for a real certificate)
 
-**Готово!** Ваши сервисы теперь доступны по HTTPS:
+The script will automatically create the config, request a certificate, and reload Nginx.
+
+**Adding the Backend:**
+Run the same script again:
+
+```sh
+./gateway.sh add
+```
+
+And answer the questions for the backend:
+
+- `Enter domain`: `api.example.com`
+- `Enter your email`: `admin@example.com`
+- `Where to proxy traffic? [1-2]`: `1`
+- `Enter Docker service name`: `backend-api` (from the backend's `docker-compose.yaml`)
+- `Enter the service's internal port`: `8000`
+- `Use staging server? (y/n)`: `n`
+
+**Done!** Your services are now accessible via HTTPS:
 
 - `https://app.example.com`
 - `https://api.example.com`
 
-> **А как насчет `api.backend.example.com`?**
-> Процесс абсолютно идентичен! Просто укажите `api.backend.example.com` в качестве домена. Шлюз обработает его без каких-либо проблем.
+> **What about `api.backend.example.com`?**
+> The process is identical! Just specify `api.backend.example.com` as the domain. The gateway will handle it without any issues.
 
 ---
 
-## 🛠️ Продвинутый сценарий: Проксирование на сервис без Docker
+## 🛠️ Advanced Use Case
 
-### Сценарий 1: Проксирование на сервис, запущенный на той же хост-машине
+> Proxying to a Non-Docker Service
 
-Предположим, у вас есть бинарник (например, приложение на Go), запущенный прямо на хост-машине и слушающий порт `8080`.
+### Scenario 1: Proxying to a service running on the same host machine
 
-1.  **Настройте DNS:** Создайте A-запись (например, `legacy.example.com`), указывающую на IP вашего сервера.
+Suppose you have a binary (e.g., a Go application) running directly on the host machine and listening on port `8080`.
 
-2.  **Запустите `add` скрипт:**
+1.  **Configure DNS:** Create an A-record (e.g., `legacy.example.com`) pointing to your server's IP.
+2.  **Run the `add` script:**
     ```sh
     ./gateway.sh add
     ```
-    Ответьте на вопросы:
-    - `Введите домен`: `legacy.example.com`
-    - `Куда проксировать трафик? [1-3]`: `2` (На порт хост-машины)
-    - `Введите порт на хост-машине`: `8080`
+    Answer the questions:
+    - `Enter domain`: `legacy.example.com`
+    - `Where to proxy traffic? [1-3]`: `2` (To a port on the host machine)
+    - `Enter the port on the host machine`: `8080`
 
-Готово! Шлюз будет проксировать трафик с `https://legacy.example.com` на `localhost:8080` вашей хост-машины.
+### 🚨 Important Note on Security and Firewalls (for Scenario 1)
 
-### Сценарий 2: Проксирование на другой сервер в приватной сети
+**The Problem:** After setup, you might see a `504 Gateway Timeout` error. This happens because the Nginx container cannot reach port `8080` on your server. The most common cause is the **host machine's firewall** (e.g., `ufw`), which blocks connections from Docker's internal network.
 
-Это полезно, если у вас есть сервисы, работающие на других машинах (виртуальных или физических) в той же локальной/приватной сети. Например, у вас есть сервис, доступный по адресу `192.168.0.10:3000`.
+**The Solution:** You need to allow traffic from Docker containers to your server. This is safe because the ports are not being opened to the outside world.
 
-> **Важно:** Убедитесь, что сервер со шлюзом имеет сетевой доступ к целевому серверу (`192.168.0.10`). Вы можете проверить это командой `ping 192.168.0.10` с сервера, где запущен шлюз.
+**How to do it (recommended way):**
 
-1.  **Настройте DNS:** Создайте A-запись (например, `internal-service.example.com`), указывающую на **публичный IP сервера со шлюзом**.
+1.  **Find your Docker network's subnet:**
 
-2.  **Запустите `add` скрипт:**
     ```sh
-    ./gateway.sh add
+    # 'web-gateway' is the network name from your .env file
+    docker network inspect web-gateway | grep "Subnet"
     ```
-    Ответьте на вопросы:
-    - `Введите домен`: `internal-service.example.com`
-    - `Куда проксировать трафик? [1-3]`: `3` (На другой сервер по IP-адресу)
-    - `Введите IP-адрес целевого сервера`: `192.168.0.10`
-    - `Введите порт на целевом сервере`: `3000`
 
-Готово! Теперь при обращении на `https://internal-service.example.com`, шлюз будет безопасно терминировать HTTPS-соединение и перенаправлять HTTP-трафик на ваш внутренний сервер `192.168.0.10:3000`.
+    You will see something like `"Subnet": "172.19.0.0/16"`.
 
-**Что если сервис на другом сервере — это Docker-контейнер?**
+2.  **Add a general allow rule to `ufw`:**
+    This command will allow all containers from this network to access any port on the host machine.
+    ```sh
+    # Replace 172.19.0.0/16 with your subnet
+    sudo ufw allow from 172.19.0.0/16
+    ```
+    This is the most convenient method, as it won't require you to add new rules for each new service.
 
-Процесс абсолютно тот же. Главное, чтобы на удаленном сервере (`192.168.0.10`) порт контейнера был опубликован на хост с помощью опции `ports` в `docker-compose.yaml` или флага `-p` в `docker run`.
+**When is this necessary?**
+This rule is **only required if you are proxying traffic to host machine ports (option 2)**. For proxying between Docker containers (option 1), this is not necessary, as they communicate within an isolated network.
 
-_Пример `docker-compose.yaml` для удаленного сервера:_
+### Scenario 2: Proxying to another server in a private network
 
-```yaml
-# На сервере 192.168.0.10
-services:
-  my-app:
-    image: my-app-image
-    ports:
-      - '3000:80' # <-- Порт 80 контейнера доступен как порт 3000 на хосте
-```
+This is useful if you have services on other machines (e.g., `192.168.0.10:3000`) in the same local network.
+
+1.  **Configure DNS:** Create an A-record (e.g., `internal.example.com`) pointing to the **public IP of the server with the gateway**.
+2.  **Run the `add` script:**
+    - `Where to proxy traffic? [1-3]`: `3` (To another server by IP address)
+    - `Enter the target server's IP address`: `192.168.0.10`
+    - `Enter the port on the target server`: `3000`
+
+Done! The gateway will terminate HTTPS and forward the traffic to your internal server.
 
 ---
 
-## 💻 Режим локальной разработки
+## 💻 Local Development Mode
 
-Этот режим идеален для тестирования HTTPS-соединения на вашем компьютере без выхода в интернет.
+This mode is ideal for testing HTTPS connections on your local machine without needing an internet connection.
 
-1.  **Сгенерируйте локальный сертификат:**
-    Вы можете сделать это для `localhost` или любого вымышленного домена.
+1.  **Generate a local certificate:**
+    You can do this for `localhost` or any custom domain.
 
     ```sh
-    # Для localhost
+    # For localhost
     ./scripts/generate-local-cert.sh localhost
 
-    # Для кастомного домена
+    # For a custom domain
     ./scripts/generate-local-cert.sh my-app.local
     ```
 
-2.  **(Для кастомного домена) Настройте `/etc/hosts`:**
-    Если вы используете домен вроде `my-app.local`, добавьте следующую строку в ваш файл `/etc/hosts` (`C:\Windows\System32\drivers\etc\hosts` на Windows):
+2.  **(For custom domains) Configure `/etc/hosts`:**
+    If you use a domain like `my-app.local`, add the following line to your `/etc/hosts` file (`C:\Windows\System32\drivers\etc\hosts` on Windows):
 
     ```
     127.0.0.1   my-app.local
     ```
 
-3.  **Создайте конфигурацию Nginx:**
-    Скопируйте шаблон и замените плейсхолдеры.
+3.  **Create an Nginx configuration:**
+    Copy the template and replace the placeholders.
 
     ```sh
     cp nginx/templates/local.conf.template nginx/conf.d/my-app.local.conf
     ```
 
-    Отредактируйте `nginx/conf.d/my-app.local.conf`, указав `<DOMAIN>`, `<SERVICE_NAME>` (имя контейнера вашего локального приложения) и `<SERVICE_PORT>`.
+    Edit `nginx/conf.d/my-app.local.conf`, specifying `<DOMAIN>`, `<SERVICE_NAME>` (the container name of your local application), and `<SERVICE_PORT>`.
 
-4.  **Запустите локальный шлюз:**
+4.  **Start the local gateway:**
 
     ```sh
     ./gateway.sh up-local
     ```
 
-    Откройте в браузере `https://my-app.local`. Вам нужно будет один раз подтвердить исключение безопасности, так как браузер не доверяет вашему самоподписанному сертификату.
+    Open `https://my-app.local` in your browser. You will need to accept a security exception once, as the browser does not trust your self-signed certificate.
 
-5.  **Остановка локального шлюза:**
+5.  **Stop the local gateway:**
     ```sh
     ./gateway.sh down-local
     ```
 
 ---
 
-## 📈 Управление и мониторинг
+## 📈 Management and Monitoring
 
-Сертификаты Let's Encrypt действуют 90 дней. Шлюз настроен на **автоматическое продление** каждые 12 часов. Вам не нужно ничего делать. Однако, для полного контроля существуют специальные команды.
+Let's Encrypt certificates are valid for 90 days. The gateway is configured for **automatic renewal** every 12 hours. You don't need to do anything. However, special commands exist for full control.
 
-- **Проверка срока действия сертификатов:**
-  Это самая важная команда для мониторинга. Запускайте ее раз в месяц, чтобы быть уверенным, что все в порядке.
+- **Check certificate expiry dates:**
+  This is the most important monitoring command. Run it once a month to ensure everything is in order.
 
   ```sh
   ./gateway.sh check-expiry
   ```
 
-````
+The output will show how many days are left until each certificate expires.
 
-Вывод покажет, сколько дней осталось до истечения каждого сертификата.
-
-- **Принудительное продление:**
-  Эта команда попытается продлить все сертификаты. Используйте ее, если вы получили уведомление от Let's Encrypt о скором истечении срока действия или для отладки.
+- **Force renewal:**
+  This command will attempt to renew all certificates. Use it if you receive a notification from Let's Encrypt about an impending expiration or for debugging purposes.
 
   ```sh
   ./gateway.sh renew
   ```
 
-  _Примечание: Certbot не будет продлевать сертификат, если до его истечения осталось больше 30 дней._
+  _Note: Certbot will not renew a certificate if it has more than 30 days until expiration._
 
-- **Просмотр логов:**
-  Если что-то идет не так, логи Nginx — первое место, куда стоит заглянуть.
+- **View logs:**
+  If something goes wrong, the Nginx logs are the first place to look.
   ```sh
   ./gateway.sh logs
   ```
 
 ---
 
-## 🗂️ Справочник команд `gateway.sh`
+## 🗂️ Command Reference
 
-#### Жизненный цикл
+> `gateway.sh`
 
-- `setup`: **(Выполнить один раз)** Подготавливает систему к работе.
-- `up`: Запускает production-шлюз (Nginx + Certbot).
-- `down`: Останавливает production-шлюз.
-- `reload`: Перезагружает конфигурацию Nginx без прерывания соединений.
-- `status`: Показывает статус контейнеров шлюза.
-- `logs`: Показывает логи Nginx в реальном времени.
+#### Lifecycle
 
-#### Управление доменами
+- `setup`: **(Run once)** Prepares the system for operation.
+- `up`: Starts the production gateway (Nginx + Certbot).
+- `down`: Stops the production gateway.
+- `reload`: Reloads the Nginx configuration without dropping connections.
+- `status`: Shows the status of the gateway containers.
+- `logs`: Shows Nginx logs in real-time.
 
-- `add`: Запускает интерактивный мастер для добавления нового домена/субдомена.
-- `remove`: Запускает интерактивный мастер для удаления домена и его сертификата.
-- `list`: Показывает список всех настроенных доменов.
+#### Domain Management
 
-#### Управление сертификатами
+- `add`: Starts an interactive wizard to add a new domain/subdomain.
+- `remove`: Starts an interactive wizard to remove a domain and its certificate.
+- `list`: Shows a list of all configured domains.
 
-- `renew`: Принудительно запускает процесс продления всех сертификатов.
-- `check-expiry`: Проверяет и выводит сроки действия для всех сертификатов.
+#### Certificate Management
 
-#### Локальная разработка
+- `renew`: Forcibly runs the renewal process for all certificates.
+- `check-expiry`: Checks and displays the expiry dates for all certificates.
 
-- `up-local`: Запускает шлюз в режиме локальной разработки.
-- `down-local`: Останавливает локальный шлюз.
+#### Local Development
+
+- `up-local`: Starts the gateway in local development mode.
+- `down-local`: Stops the local gateway.
 
 ---
 
-## ❓ Часто задаваемые вопросы (FAQ)
+## ❓ Frequently Asked Questions (FAQ)
 
-**В: При добавлении домена я получаю ошибку от Certbot. Что делать?**
-**О:** Наиболее частые причины: 1. **DNS-запись не обновилась.** Убедитесь, что ваш домен указывает на правильный IP. 2. **Порт 80 заблокирован.** Убедитесь, что ваш файрвол (на сервере или у хостинг-провайдера) разрешает входящий трафик на порт 80. Let's Encrypt использует его для проверки владения доменом. 3. **Вы превысили лимиты Let's Encrypt.** Если вы много раз неудачно пытались получить сертификат, используйте опцию "staging-сервер", чтобы не блокировать свой домен.
+**Q: I'm getting an error from Certbot when adding a domain. What should I do?**
+**A:** The most common reasons are: 1. **The DNS record has not propagated.** Make sure your domain points to the correct IP. 2. **Port 80 is blocked.** Ensure your firewall (on the server or with your hosting provider) allows incoming traffic on port 80. Let's Encrypt uses it to verify domain ownership. 3. **You have exceeded Let's Encrypt rate limits.** If you have failed to obtain a certificate many times, use the "staging server" option to avoid blocking your domain.
 
-**В: Я вижу ошибку `502 Bad Gateway`. Как исправить?**
-**О:** Это означает, что Nginx не может связаться с вашим приложением. Проверьте: 1. Контейнер вашего приложения запущен (`docker ps`). 2. Имя сервиса (`<SERVICE_NAME>`) в Nginx-конфиге (`nginx/conf.d/your-domain.conf`) в точности совпадает с именем сервиса в `docker-compose.yaml` вашего приложения. 3. Приложение и шлюз находятся в одной Docker-сети.
+**Q: I'm seeing a `502 Bad Gateway` error. How do I fix it?**
+**A:** This means Nginx cannot communicate with your application. Check that: 1. Your application's container is running (`docker ps`). 2. The service name (`<SERVICE_NAME>`) in the Nginx config (`nginx/conf.d/your-domain.conf`) exactly matches the service name in your application's `docker-compose.yaml`. 3. The application and the gateway are in the same Docker network.
 
-**В: Как мне добавить кастомные заголовки или другие правила Nginx?**
-**О:** Просто отредактируйте соответствующий файл конфигурации в `nginx/conf.d/`. Например, `nginx/conf.d/app.example.com.conf`. После сохранения изменений выполните `./gateway.sh reload`, чтобы применить их.
-
-```
-
-```
-````
+**Q: How can I add custom headers or other Nginx rules?**
+**A:** Simply edit the corresponding configuration file in `nginx/conf.d/`. For example, `nginx/conf.d/app.example.com.conf`. After saving your changes, run `./gateway.sh reload` to apply them.

@@ -26,7 +26,7 @@ for domain in $DOMAINS; do
         continue
     fi
     echo "--- Домен: $domain ---"
-    expiry_date=$(docker run --rm -v "${CERT_DIR}:/etc/letsencrypt" openssl:3 x509 -enddate -noout -in "/etc/letsencrypt/live/${domain}/fullchain.pem" | cut -d= -f2)
+    expiry_date=$(docker run --rm -v "${CERT_DIR}:/etc/letsencrypt" certbot/certbot openssl x509 -enddate -noout -in "/etc/letsencrypt/live/${domain}/fullchain.pem" | cut -d= -f2)
 
     if [[ $(uname) == "Darwin" ]]; then # macOS
         expiry_seconds=$(date -j -f "%b %d %T %Y %Z" "$expiry_date" "+%s")
