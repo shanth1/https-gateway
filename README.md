@@ -20,12 +20,12 @@ This project provides a ready-to-use, universal reverse-proxy gateway. It is des
 ## 📖 Table of Contents
 
 1.  [Core Concepts](#core-concepts)
-2.  [Quick Start: Initial Setup](#quick-start-initial-setup)
-3.  [Primary Use Case: Deploying a Project with Frontend and Backend](#primary-use-case-deploying-a-project-with-frontend-and-backend)
-4.  [Advanced Use Case: Proxying to a Non-Docker Service](#advanced-use-case-proxying-to-a-non-docker-service)
+2.  [Quick Start](#quick-start)
+3.  [Primary Use Case](#primary-use-case)
+4.  [Advanced Use Case](#advanced-use-case)
 5.  [Local Development Mode](#local-development-mode)
 6.  [Management and Monitoring](#management-and-monitoring)
-7.  [`gateway.sh` Command Reference](#gatewaysh-command-reference)
+7.  [Command Reference](#command-reference)
 8.  [Frequently Asked Questions (FAQ)](#frequently-asked-questions-faq)
 
 ---
@@ -82,7 +82,9 @@ These steps need to be performed **once** on your server.
 
 ---
 
-## 🚀 Primary Use Case: Deploying a Project with Frontend and Backend
+## 🚀 Primary Use Case
+
+> Deploying a Project with Frontend and Backend
 
 Let's imagine we have a standard web project consisting of two Docker services:
 
@@ -189,7 +191,9 @@ And answer the questions for the backend:
 
 ---
 
-## 🛠️ Advanced Use Case: Proxying to a Non-Docker Service
+## 🛠️ Advanced Use Case
+
+> Proxying to a Non-Docker Service
 
 ### Scenario 1: Proxying to a service running on the same host machine
 
@@ -323,7 +327,9 @@ The output will show how many days are left until each certificate expires.
 
 ---
 
-## 🗂️ `gateway.sh` Command Reference
+## 🗂️ Command Reference
+
+> `gateway.sh`
 
 #### Lifecycle
 
