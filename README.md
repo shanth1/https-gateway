@@ -19,14 +19,14 @@ This project provides a ready-to-use, universal reverse-proxy gateway. It is des
 
 ## 📖 Table of Contents
 
-1.  [Core Concepts](#-core-concepts)
-2.  [Quick Start: Initial Setup](#-quick-start-initial-setup)
-3.  [Primary Use Case: Deploying a Project with Frontend and Backend](#-primary-use-case-deploying-a-project-with-frontend-and-backend)
-4.  [Advanced Use Case: Proxying to a Non-Docker Service](#-advanced-use-case-proxying-to-a-non-docker-service)
-5.  [Local Development Mode](#-local-development-mode)
-6.  [Management and Monitoring](#-management-and-monitoring)
-7.  [`gateway.sh` Command Reference](#-gatewaysh-command-reference)
-8.  [Frequently Asked Questions (FAQ)](#-frequently-asked-questions-faq)
+1.  [Core Concepts](#core-concepts)
+2.  [Quick Start: Initial Setup](#quick-start-initial-setup)
+3.  [Primary Use Case: Deploying a Project with Frontend and Backend](#primary-use-case-deploying-a-project-with-frontend-and-backend)
+4.  [Advanced Use Case: Proxying to a Non-Docker Service](#advanced-use-case-proxying-to-a-non-docker-service)
+5.  [Local Development Mode](#local-development-mode)
+6.  [Management and Monitoring](#management-and-monitoring)
+7.  [`gateway.sh` Command Reference](#gatewaysh-command-reference)
+8.  [Frequently Asked Questions (FAQ)](#frequently-asked-questions-faq)
 
 ---
 
