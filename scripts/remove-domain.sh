@@ -1,35 +1,50 @@
 #!/bin/bash
 set -e
 
-source ./scripts/list-domains.sh
-echo ""
-read -p "Введите домен, который хотите удалить (из списка выше): " DOMAIN
+# Получаем список доменов для выбора
+DOMAINS=$(ls -1 nginx/conf.d/ | grep -v '.gitkeep' | sed 's/\.conf$//')
 
-if [ -z "$DOMAIN" ]; then
-  echo "Ошибка: Домен не может быть пустым."
-  exit 1
+if [ -z "$DOMAINS" ]; then
+  echo "Не найдено настроенных доменов для удаления."
+  exit 0
 fi
 
-CONFIG_FILE="nginx/conf.d/${DOMAIN}.conf"
+echo "Какой домен вы хотите удалить?"
+select DOMAIN in $DOMAINS; do
+  if [ -n "$DOMAIN" ]; then
+    break
+  else
+    echo "Неверный выбор. Попробуйте еще раз."
+  fi
+done
 
-if [ ! -f "$CONFIG_FILE" ]; then
-  echo "Ошибка: Конфигурационный файл для домена $DOMAIN не найден."
-  exit 1
-fi
-
-read -p "Вы уверены, что хотите удалить домен $DOMAIN и его сертификат? (y/n) " -n 1 -r
+read -p "Вы уверены, что хотите удалить домен $DOMAIN и все его сертификаты? (y/n) " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Удаление отменено."
     exit 1
 fi
 
-echo "### Удаляем сертификат для домена $DOMAIN... ###"
-docker-compose run --rm certbot delete --cert-name $DOMAIN
+echo "### Шаг 1: Удаление сертификата Let's Encrypt для $DOMAIN... ###"
+docker-compose run --rm certbot delete --cert-name "$DOMAIN"
 
-echo "### Удаляем конфигурационный файл Nginx... ###"
-rm $CONFIG_FILE
+if [ $? -ne 0 ]; then
+  echo "### ВНИМАНИЕ: Не удалось удалить сертификат. Возможно, его не существовало. Продолжаем... ###"
+fi
 
-echo "### Перезагружаем Nginx... ###"
+CONFIG_FILE="nginx/conf.d/${DOMAIN}.conf"
+if [ -f "$CONFIG_FILE" ]; then
+    echo "### Шаг 2: Удаление конфигурационного файла Nginx... ###"
+    rm "$CONFIG_FILE"
+else
+    echo "### ВНИМАНИЕ: Конфигурационный файл $CONFIG_FILE не найден. ###"
+fi
+
+
+echo "### Шаг 3: Перезагрузка Nginx... ###"
 docker-compose exec nginx nginx -s reload
 
-echo "✅ Домен $DOMAIN успешно удален."
+echo ""
+echo "=================================================================="
+echo "✅ Готово! Домен $DOMAIN был успешно удален."
+echo "=================================================================="
