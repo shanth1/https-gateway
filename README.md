@@ -1,6 +1,8 @@
 # 🚀 Universal HTTPS Gateway with Docker and Nginx
 
-[Russian version](README.ru.md)
+<div align="center">
+	<strong>EN</strong> | <a href="README.ru.md">RU</a>
+</div>
 
 This project provides a ready-to-use, universal reverse-proxy gateway. It is designed for maximum simplicity and reliability, allowing you to effortlessly publish any number of web applications under HTTPS, whether they are Docker containers or regular binaries.
 
