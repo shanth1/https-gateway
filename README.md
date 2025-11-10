@@ -4,6 +4,8 @@
 	<strong>EN</strong> | <a href="README.ru.md">RU</a>
 </div>
 
+[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](/LICENSE)
+
 This project provides a ready-to-use, universal reverse-proxy gateway. It is designed for maximum simplicity and reliability, allowing you to effortlessly publish any number of web applications under HTTPS, whether they are Docker containers or regular binaries.
 
 ## 🌟 Key Features
