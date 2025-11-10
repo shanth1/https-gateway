@@ -42,7 +42,7 @@ To use the gateway effectively, it's important to understand three key elements:
 
 ---
 
-## ⚙️ Quick Start
+## 🚀 Quick Start
 
 These steps need to be performed **once** on your server.
 
@@ -82,7 +82,7 @@ These steps need to be performed **once** on your server.
 
 ---
 
-## 🚀 Primary Use Case
+## 🏠 Primary Use Case
 
 > Deploying a Project with Frontend and Backend
 
@@ -191,7 +191,7 @@ And answer the questions for the backend:
 
 ---
 
-## 🛠️ Advanced Use Case
+## 🗿 Advanced Use Case
 
 > Proxying to a Non-Docker Service
 
@@ -327,7 +327,7 @@ The output will show how many days are left until each certificate expires.
 
 ---
 
-## 🗂️ Command Reference
+## 💾 Command Reference
 
 > `gateway.sh`
 
