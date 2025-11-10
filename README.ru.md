@@ -1,6 +1,10 @@
 # 🚀 Универсальный HTTPS шлюз на Docker и Nginx
 
-[Английская версия](README.md)
+<div align="center">
+	<a href="README.md">EN</a> | <strong>RU</strong>
+</div>
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](/LICENSE)
 
 Этот проект предоставляет готовый к использованию, универсальный reverse-proxy шлюз. Он спроектирован для максимальной простоты и надежности, позволяя вам без труда публиковать любое количество веб-приложений под HTTPS, будь то Docker-контейнеры или обычные бинарники.
 
@@ -42,7 +46,7 @@
 
 ---
 
-## ⚙️ Быстрый старт: Первоначальная настройка
+## 🚀 Быстрый старт
 
 Эти шаги нужно выполнить **один раз** на вашем сервере.
 
@@ -67,10 +71,10 @@
     Ожидаемый результат:
 
     ```
-    Создаем Docker-сеть 'web-gateway'...
-    Скачиваем рекомендованные параметры TLS...
-    Копируем параметры в Docker-том...
-    ✅ Первоначальная настройка завершена!
+    Creating Docker network 'web-gateway'...
+    Downloading recommended TLS parameters...
+    Copying parameters into the Docker volume...
+    ✅ Initial setup complete!
     ```
 
 4.  **Запустите шлюз:**
@@ -82,7 +86,7 @@
 
 ---
 
-## 🚀 Основной сценарий
+## 🏠 Основной сценарий
 
 > Публикация проекта с Frontend и Backend
 
@@ -156,12 +160,12 @@ docker-compose up -d
 
 Ответьте на вопросы скрипта:
 
-- `Введите домен`: `app.example.com`
-- `Введите ваш email`: `admin@example.com`
-- `Куда проксировать трафик? [1-3]`: `1` (на Docker-контейнер)
-- `Введите имя сервиса Docker`: `frontend-app` (из `docker-compose.yaml` фронтенда)
-- `Введите внутренний порт сервиса`: `80`
-- `Использовать staging-сервер? (y/n)`: `n` (для реального сертификата)
+- `Enter the domain name (e.g., app.example.com):` `app.example.com`
+- `Enter your email (for Let's Encrypt notifications):` `admin@example.com`
+- `How should the traffic be proxied? [1-3]`: `1`
+- `Enter the Docker service name...:` `frontend-app` (из `docker-compose.yaml` фронтенда)
+- `Enter the service's internal port...:` `80`
+- `Use Let's Encrypt staging server (for testing)? (y/n)`: `n`
 
 Скрипт автоматически создаст конфиг, запросит сертификат и перезагрузит Nginx.
 
@@ -174,12 +178,12 @@ docker-compose up -d
 
 И отвечаем на вопросы для бэкенда:
 
-- `Введите домен`: `api.example.com`
-- `Введите ваш email`: `admin@example.com`
-- `Куда проксировать трафик? [1-2]`: `1`
-- `Введите имя сервиса Docker`: `backend-api` (из `docker-compose.yaml` бэкенда)
-- `Введите внутренний порт сервиса`: `8000`
-- `Использовать staging-сервер? (y/n)`: `n`
+- `Enter the domain name...:` `api.example.com`
+- `Enter your email...:` `admin@example.com`
+- `How should the traffic be proxied? [1-3]`: `1`
+- `Enter the Docker service name...:` `backend-api` (из `docker-compose.yaml` бэкенда)
+- `Enter the service's internal port...:` `8000`
+- `Use Let's Encrypt staging server (for testing)? (y/n)`: `n`
 
 **Готово!** Ваши сервисы теперь доступны по HTTPS:
 
@@ -191,7 +195,7 @@ docker-compose up -d
 
 ---
 
-## 🛠️ Продвинутый сценарий
+## 🗿 Продвинутый сценарий
 
 > Проксирование на сервис без Docker
 
@@ -205,9 +209,9 @@ docker-compose up -d
     ./gateway.sh add
     ```
     Ответьте на вопросы:
-    - `Введите домен`: `legacy.example.com`
-    - `Куда проксировать трафик? [1-3]`: `2` (На порт хост-машины)
-    - `Введите порт на хост-машине`: `8080`
+    - `Enter the domain name...:` `legacy.example.com`
+    - `How should the traffic be proxied? [1-3]`: `2`
+    - `Enter the port on the host machine...:` `8080`
 
 ### 🚨 Важное замечание по безопасности и фаерволу (для сценария 1)
 
@@ -243,9 +247,9 @@ docker-compose up -d
 
 1.  **Настройте DNS:** Создайте A-запись (например, `internal.example.com`), указывающую на **публичный IP сервера со шлюзом**.
 2.  **Запустите `add` скрипт:**
-    - `Куда проксировать трафик? [1-3]`: `3` (На другой сервер по IP-адресу)
-    - `Введите IP-адрес целевого сервера`: `192.168.0.10`
-    - `Введите порт на целевом сервере`: `3000`
+    - `How should the traffic be proxied? [1-3]`: `3`
+    - `Enter the target server's IP address:` `192.168.0.10`
+    - `Enter the port on the target server:` `3000`
 
 Готово! Шлюз будет терминировать HTTPS и перенаправлять трафик на ваш внутренний сервер.
 
@@ -327,7 +331,7 @@ docker-compose up -d
 
 ---
 
-## 🗂️ Справочник команд
+## 💾 Справочник команд
 
 > `gateway.sh`
 

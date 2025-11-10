@@ -1,75 +1,70 @@
 #!/bin/bash
 
-# --- Главный скрипт управления HTTPS шлюзом ---
-
-# Загружаем переменные из .env файла
 if [ -f .env ]; then
   export $(cat .env | sed 's/#.*//g' | xargs)
 fi
 
-# Функция для вывода справки
 show_help() {
-  echo "Использование: ./gateway.sh [команда]"
+  echo "Usage: ./gateway.sh [command]"
   echo ""
-  echo "Команды:"
-  echo "  setup         : Первоначальная настройка (создать сеть, скачать TLS параметры)."
-  echo "  up            : Запустить production-шлюз (nginx + certbot)."
-  echo "  down          : Остановить production-шлюз."
-  echo "  up-local      : Запустить шлюз для локальной разработки."
-  echo "  down-local    : Остановить локальный шлюз."
-  echo "  reload        : Перезагрузить конфигурацию Nginx без остановки."
-  echo "  logs          : Показать логи Nginx."
-  echo "  status        : Показать статус контейнеров."
+  echo "Commands:"
+  echo "  setup         : Initial setup (create network, download TLS parameters)."
+  echo "  up            : Start the production gateway (nginx + certbot)."
+  echo "  down          : Stop the production gateway."
+  echo "  up-local      : Start the gateway for local development."
+  echo "  down-local    : Stop the local gateway."
+  echo "  reload        : Reload Nginx configuration without stopping."
+  echo "  logs          : Show Nginx logs."
+  echo "  status        : Show the status of the containers."
   echo ""
-  echo "  add           : Запустить интерактивный скрипт добавления нового домена."
-  echo "  remove        : Запустить интерактивный скрипт удаления домена."
-  echo "  list          : Показать список настроенных доменов."
+  echo "  add           : Run the interactive script to add a new domain."
+  echo "  remove        : Run the interactive script to remove a domain."
+  echo "  list          : Show the list of configured domains."
   echo ""
-  echo "  renew         : Принудительно попытаться продлить все сертификаты."
-  echo "  check-expiry  : Проверить сроки действия сертификатов для всех доменов."
+  echo "  renew         : Force an attempt to renew all certificates."
+  echo "  check-expiry  : Check the expiration dates of certificates for all domains."
   echo ""
 }
 
-# Проверяем, существует ли команда
 if [ -z "$1" ]; then
   show_help
   exit 1
 fi
 
 COMMAND=$1
-shift # Сдвигаем аргументы, чтобы скрипты могли принимать свои
+shift
 
 case $COMMAND in
   setup)
-    echo "--- Выполняем первоначальную настройку... ---"
+    echo "--- Performing initial setup... ---"
     ./scripts/setup.sh
     ;;
   up)
-    echo "--- Запускаем production-шлюз... ---"
+    echo "--- Starting production gateway... ---"
     docker-compose up -d
     ;;
   down)
-    echo "--- Останавливаем production-шлюз... ---"
+    echo "--- Stopping production gateway... ---"
     docker-compose down
     ;;
   up-local)
-    echo "--- Запускаем локальный шлюз... ---"
+    echo "--- Starting local gateway... ---"
     docker-compose -f docker-compose.local.yaml up -d
     ;;
   down-local)
-    echo "--- Останавливаем локальный шлюз... ---"
+    echo "--- Stopping local gateway... ---"
     docker-compose -f docker-compose.local.yaml down
     ;;
   reload)
-    echo "--- Перезагружаем конфигурацию Nginx... ---"
+    echo "--- Reloading Nginx configuration... ---"
     docker-compose exec nginx nginx -s reload
     ;;
   logs)
-    echo "--- Логи Nginx (нажмите Ctrl+C для выхода)... ---"
+    echo "--- Nginx logs (press Ctrl+C to exit)... ---"
     docker-compose logs -f nginx
     ;;
   status)
-    echo "--- Статус контейнеров шлюза... ---"
+    echo "--- Gateway container status... ---"
     docker-compose ps
     ;;
   add)
@@ -82,14 +77,14 @@ case $COMMAND in
     ./scripts/list-domains.sh
     ;;
   renew)
-    echo "--- Принудительная проверка и продление сертификатов... ---"
+    echo "--- Forcing certificate check and renewal... ---"
     ./scripts/renew-certs.sh
     ;;
   check-expiry)
     ./scripts/check-expiry.sh
     ;;
   *)
-    echo "Ошибка: Неизвестная команда '$COMMAND'"
+    echo "Error: Unknown command '$COMMAND'"
     echo ""
     show_help
     exit 1

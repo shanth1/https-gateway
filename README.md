@@ -1,6 +1,10 @@
 # 🚀 Universal HTTPS Gateway with Docker and Nginx
 
-[Russian version](README.ru.md)
+<div align="center">
+	<strong>EN</strong> | <a href="README.ru.md">RU</a>
+</div>
+
+[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](/LICENSE)
 
 This project provides a ready-to-use, universal reverse-proxy gateway. It is designed for maximum simplicity and reliability, allowing you to effortlessly publish any number of web applications under HTTPS, whether they are Docker containers or regular binaries.
 
@@ -42,7 +46,7 @@ To use the gateway effectively, it's important to understand three key elements:
 
 ---
 
-## ⚙️ Quick Start
+## 🚀 Quick Start
 
 These steps need to be performed **once** on your server.
 
@@ -69,7 +73,7 @@ These steps need to be performed **once** on your server.
     ```
     Creating Docker network 'web-gateway'...
     Downloading recommended TLS parameters...
-    Copying parameters to Docker volume...
+    Copying parameters into the Docker volume...
     ✅ Initial setup complete!
     ```
 
@@ -82,7 +86,7 @@ These steps need to be performed **once** on your server.
 
 ---
 
-## 🚀 Primary Use Case
+## 🏠 Primary Use Case
 
 > Deploying a Project with Frontend and Backend
 
@@ -156,12 +160,12 @@ Return to the gateway folder and add each domain using the interactive script.
 
 Answer the script's questions:
 
-- `Enter domain`: `app.example.com`
-- `Enter your email`: `admin@example.com`
-- `Where to proxy traffic? [1-3]`: `1` (To a Docker container)
-- `Enter Docker service name`: `frontend-app` (from the frontend's `docker-compose.yaml`)
-- `Enter the service's internal port`: `80`
-- `Use staging server? (y/n)`: `n` (for a real certificate)
+- `Enter the domain name (e.g., app.example.com):` `app.example.com`
+- `Enter your email (for Let's Encrypt notifications):` `admin@example.com`
+- `How should the traffic be proxied? [1-3]`: `1`
+- `Enter the Docker service name...:` `frontend-app` (from the frontend's `docker-compose.yaml`)
+- `Enter the service's internal port...:` `80`
+- `Use Let's Encrypt staging server (for testing)? (y/n)`: `n`
 
 The script will automatically create the config, request a certificate, and reload Nginx.
 
@@ -174,12 +178,12 @@ Run the same script again:
 
 And answer the questions for the backend:
 
-- `Enter domain`: `api.example.com`
-- `Enter your email`: `admin@example.com`
-- `Where to proxy traffic? [1-2]`: `1`
-- `Enter Docker service name`: `backend-api` (from the backend's `docker-compose.yaml`)
-- `Enter the service's internal port`: `8000`
-- `Use staging server? (y/n)`: `n`
+- `Enter the domain name...:` `api.example.com`
+- `Enter your email...:` `admin@example.com`
+- `How should the traffic be proxied? [1-3]`: `1`
+- `Enter the Docker service name...:` `backend-api` (from the backend's `docker-compose.yaml`)
+- `Enter the service's internal port...:` `8000`
+- `Use Let's Encrypt staging server (for testing)? (y/n)`: `n`
 
 **Done!** Your services are now accessible via HTTPS:
 
@@ -191,7 +195,7 @@ And answer the questions for the backend:
 
 ---
 
-## 🛠️ Advanced Use Case
+## 🗿 Advanced Use Case
 
 > Proxying to a Non-Docker Service
 
@@ -205,9 +209,9 @@ Suppose you have a binary (e.g., a Go application) running directly on the host 
     ./gateway.sh add
     ```
     Answer the questions:
-    - `Enter domain`: `legacy.example.com`
-    - `Where to proxy traffic? [1-3]`: `2` (To a port on the host machine)
-    - `Enter the port on the host machine`: `8080`
+    - `Enter the domain name...:` `legacy.example.com`
+    - `How should the traffic be proxied? [1-3]`: `2`
+    - `Enter the port on the host machine...:` `8080`
 
 ### 🚨 Important Note on Security and Firewalls (for Scenario 1)
 
@@ -243,9 +247,9 @@ This is useful if you have services on other machines (e.g., `192.168.0.10:3000`
 
 1.  **Configure DNS:** Create an A-record (e.g., `internal.example.com`) pointing to the **public IP of the server with the gateway**.
 2.  **Run the `add` script:**
-    - `Where to proxy traffic? [1-3]`: `3` (To another server by IP address)
-    - `Enter the target server's IP address`: `192.168.0.10`
-    - `Enter the port on the target server`: `3000`
+    - `How should the traffic be proxied? [1-3]`: `3`
+    - `Enter the target server's IP address:` `192.168.0.10`
+    - `Enter the port on the target server:` `3000`
 
 Done! The gateway will terminate HTTPS and forward the traffic to your internal server.
 
@@ -327,7 +331,7 @@ The output will show how many days are left until each certificate expires.
 
 ---
 
-## 🗂️ Command Reference
+## 💾 Command Reference
 
 > `gateway.sh`
 

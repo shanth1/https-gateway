@@ -25,9 +25,6 @@ services:
     volumes:
       - certbot_certs:/etc/letsencrypt
       - certbot_www:/var/www/certbot
-    # Команда запускает проверку на продление каждые 12 часов.
-    # trap exit TERM; - корректно завершает работу при docker-compose down
-    # wait $${!}; - ждет завершения sleep, не загружая CPU
     command: >
       sh -c "
         trap exit TERM;
