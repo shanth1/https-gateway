@@ -1,36 +1,37 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Generates a self-signed certificate for local development.
 
-# Проверяем, установлен ли openssl
-if ! [ -x "$(command -v openssl)" ]; then
-  echo 'Ошибка: openssl не установлен.' >&2
-  echo 'На macOS/Linux он обычно есть. На Windows установите его с WSL или Git Bash.' >&2
+# Check if openssl is installed
+if ! command -v openssl &> /dev/null; then
+  echo "Error: openssl is not installed." >&2
+  echo "On macOS/Linux, it's usually pre-installed. On Windows, use WSL or Git Bash." >&2
   exit 1
 fi
 
 DOMAIN=$1
 if [ -z "$DOMAIN" ]; then
-  echo "Использование: ./generate-local-cert.sh <домен>"
-  echo "Пример: ./generate-local-cert.sh localhost"
-  echo "Пример для кастомного домена: ./generate-local-cert.sh my-app.local"
+  echo "Usage: ./scripts/generate-local-cert.sh <domain>"
+  echo "Example: ./scripts/generate-local-cert.sh localhost"
+  echo "Example for a custom domain: ./scripts/generate-local-cert.sh my-app.local"
   exit 1
 fi
 
-# Создаем папки для сертификатов, если их нет
+# Create ssl directory if it doesn't exist
 mkdir -p nginx/ssl
 
 KEY_FILE="nginx/ssl/${DOMAIN}.key"
 CERT_FILE="nginx/ssl/${DOMAIN}.crt"
 
 if [ -f "$KEY_FILE" ] && [ -f "$CERT_FILE" ]; then
-    echo "Сертификат для $DOMAIN уже существует в nginx/ssl/."
-    exit 0
+  echo "Certificate for $DOMAIN already exists in nginx/ssl/."
+  exit 0
 fi
 
-echo "Генерируем самоподписанный сертификат для $DOMAIN..."
+echo "Generating self-signed certificate for $DOMAIN..."
 
 openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
   -keyout "$KEY_FILE" \
   -out "$CERT_FILE" \
-  -subj "/C=RU/ST=Local/L=Local/O=LocalDev/OU=Dev/CN=$DOMAIN"
+  -subj "/C=XX/ST=Local/L=Local/O=LocalDev/OU=Dev/CN=$DOMAIN"
 
-echo "Готово! Сертификат и ключ сохранены в папке nginx/ssl/"
+echo "Done! Certificate and key saved in nginx/ssl/"

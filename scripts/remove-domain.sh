@@ -1,50 +1,51 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Interactively removes a domain's configuration and its SSL certificate.
+
 set -e
 
-# Получаем список доменов для выбора
-DOMAINS=$(ls -1 nginx/conf.d/ | grep -v '.gitkeep' | sed 's/\.conf$//')
+# Get a list of configured domains
+DOMAINS=$(ls -1 nginx/conf.d/ | grep -v '\.gitkeep' | sed 's/\.conf$//')
 
 if [ -z "$DOMAINS" ]; then
-  echo "Не найдено настроенных доменов для удаления."
+  echo "No configured domains found to remove."
   exit 0
 fi
 
-echo "Какой домен вы хотите удалить?"
+echo "Which domain would you like to remove?"
 select DOMAIN in $DOMAINS; do
   if [ -n "$DOMAIN" ]; then
     break
   else
-    echo "Неверный выбор. Попробуйте еще раз."
+    echo "Invalid selection. Please try again."
   fi
 done
 
-read -p "Вы уверены, что хотите удалить домен $DOMAIN и все его сертификаты? (y/n) " -n 1 -r
+echo ""
+read -p "Are you sure you want to remove $DOMAIN and its certificate? (y/n) " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Удаление отменено."
+    echo "Removal cancelled."
     exit 1
 fi
 
-echo "### Шаг 1: Удаление сертификата Let's Encrypt для $DOMAIN... ###"
-docker-compose run --rm certbot delete --cert-name "$DOMAIN"
-
-if [ $? -ne 0 ]; then
-  echo "### ВНИМАНИЕ: Не удалось удалить сертификат. Возможно, его не существовало. Продолжаем... ###"
-fi
+echo ""
+echo "### Step 1: Deleting Let's Encrypt certificate for $DOMAIN... ###"
+docker-compose run --rm certbot delete --cert-name "$DOMAIN" || true
+# We use '|| true' to prevent the script from exiting if certbot fails
+# (e.g., if the certificate was already removed manually).
 
 CONFIG_FILE="nginx/conf.d/${DOMAIN}.conf"
 if [ -f "$CONFIG_FILE" ]; then
-    echo "### Шаг 2: Удаление конфигурационного файла Nginx... ###"
+    echo "### Step 2: Removing Nginx configuration file... ###"
     rm "$CONFIG_FILE"
 else
-    echo "### ВНИМАНИЕ: Конфигурационный файл $CONFIG_FILE не найден. ###"
+    echo "### WARNING: Nginx configuration file not found at $CONFIG_FILE. ###"
 fi
 
-
-echo "### Шаг 3: Перезагрузка Nginx... ###"
+echo "### Step 3: Reloading Nginx configuration... ###"
 docker-compose exec nginx nginx -s reload
 
 echo ""
 echo "=================================================================="
-echo "✅ Готово! Домен $DOMAIN был успешно удален."
+echo "✅ Done! Domain $DOMAIN has been successfully removed."
 echo "=================================================================="
